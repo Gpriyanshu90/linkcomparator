@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Profile Comparator AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-text {
+            background: linear-gradient(to right, #2563eb, #9333ea);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold gradient-text mb-3">
+                LinkedIn Profile Comparator AI
+            </h1>
+            <p class="text-gray-600 text-lg">Compare LinkedIn profiles using Python + Google Gemini AI</p>
+        </div>
+
+        <!-- API Key Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">🔑 Google Gemini API Configuration</h2>
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Gemini API Key</label>
+                    <input type="password" id="apiKey" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your Gemini API key">
+                </div>
+                <div class="flex items-end">
+                    <button onclick="saveApiKey()" class="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold px-6 py-3 rounded-lg transition duration-300">
+                        Save Key
+                    </button>
+                </div>
+            </div>
+            <div class="mt-3 space-y-1">
+                <p class="text-sm text-gray-500">🔒 Your API key is stored locally</p>
+                <p class="text-sm text-blue-600">
+                    Get free API: <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline font-medium">Google AI Studio</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Profile Inputs -->
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <!-- Profile 1 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">🔗 Profile 1</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">LinkedIn URL</label>
+                        <input type="text" id="profile1Url" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://linkedin.com/in/username">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">📄 Or paste profile text</label>
+                        <textarea id="profile1Text" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="Paste profile details..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile 2 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">🔗 Profile 2</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">LinkedIn URL</label>
+                        <input type="text" id="profile2Url" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="https://linkedin.com/in/username">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">📄 Or paste profile text</label>
+                        <textarea id="profile2Text" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none" placeholder="Paste profile details..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compare Button -->
+        <div class="text-center mb-8">
+            <button onclick="compareProfiles()" id="compareBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-10 py-4 rounded-xl shadow-lg transition duration-300 disabled:opacity-50">
+                🚀 Compare Profiles with AI
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div id="loadingSection" class="hidden text-center mb-8">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <p class="text-gray-600 mt-4">Python AI is analyzing profiles...</p>
+        </div>
+
+        <!-- Error -->
+        <div id="errorSection" class="hidden bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
+            <h3 class="text-red-800 font-semibold mb-2">❌ Error</h3>
+            <p id="errorMessage" class="text-red-700"></p>
+        </div>
+
+        <!-- Report -->
+        <div id="reportSection" class="hidden bg-white rounded-xl shadow-2xl p-8 border border-gray-100">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 pb-4 border-b-2">AI Comparison Report</h2>
+            <div id="reportContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let savedApiKey = '';
+
+        function saveApiKey() {
+            const key = document.getElementById('apiKey').value.trim();
+            if (!key) {
+                alert('Please enter an API key');
+                return;
+            }
+            savedApiKey = key;
+            alert('✓ API key saved successfully!');
+        }
+
+        async function compareProfiles() {
+            document.getElementById('reportSection').classList.add('hidden');
+            document.getElementById('errorSection').classList.add('hidden');
+
+            const profile1Url = document.getElementById('profile1Url').value.trim();
+            const profile1Text = document.getElementById('profile1Text').value.trim();
+            const profile2Url = document.getElementById('profile2Url').value.trim();
+            const profile2Text = document.getElementById('profile2Text').value.trim();
+
+            if (!savedApiKey) {
+                showError('Please enter and save your Gemini API key first');
+                return;
+            }
+
+            if ((!profile1Url && !profile1Text) || (!profile2Url && !profile2Text)) {
+                showError('Please provide information for both profiles');
+                return;
+            }
+
+            document.getElementById('loadingSection').classList.remove('hidden');
+            document.getElementById('compareBtn').disabled = true;
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/compare', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        api_key: savedApiKey,
+                        profile1_url: profile1Url,
+                        profile1_text: profile1Text,
+                        profile2_url: profile2Url,
+                        profile2_text: profile2Text
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to compare profiles');
+                }
+
+                displayReport(data.report);
+
+            } catch (error) {
+                showError(error.message);
+                console.error('Full error:', error);
+            } finally {
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('compareBtn').disabled = false;
+            }
+        }
+
+        function displayReport(report) {
+            const content = `
+                <!-- Overview -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-blue-600 mb-4">📋 Overview</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <h4 class="font-semibold text-blue-800 mb-2">Profile 1</h4>
+                            <p class="text-gray-700">${report.overview?.profile1 || 'N/A'}</p>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                            <h4 class="font-semibold text-purple-800 mb-2">Profile 2</h4>
+                            <p class="text-gray-700">${report.overview?.profile2 || 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Similarities -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-green-600 mb-4">🤝 Similarities</h3>
+                    <div class="bg-green-50 p-5 rounded-lg border border-green-200">
+                        <ul class="space-y-2">
+                            ${report.similarities?.map(item => `
+                                <li class="flex items-start gap-2">
+                                    <span class="text-green-600 mt-1">✓</span>
+                                    <span class="text-gray-700">${item}</span>
+                                </li>
+                            `).join('') || '<li>No similarities found</li>'}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Differences -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-orange-600 mb-4">⚖️ Differences</h3>
+                    <div class="bg-orange-50 p-5 rounded-lg border border-orange-200">
+                        <ul class="space-y-2">
+                            ${report.differences?.map(item => `
+                                <li class="flex items-start gap-2">
+                                    <span class="text-orange-600 mt-1">•</span>
+                                    <span class="text-gray-700">${item}</span>
+                                </li>
+                            `).join('') || '<li>No differences found</li>'}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Skills -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-purple-600 mb-4">🎯 Skills Analysis</h3>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <h4 class="font-semibold text-purple-800 mb-3">Common Skills</h4>
+                            <ul class="space-y-1">
+                                ${report.skills?.common?.map(skill => `<li class="text-sm text-gray-700">• ${skill}</li>`).join('') || '<li>None</li>'}
+                            </ul>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h4 class="font-semibold text-blue-800 mb-3">Profile 1 Unique</h4>
+                            <ul class="space-y-1">
+                                ${report.skills?.profile1Unique?.map(skill => `<li class="text-sm text-gray-700">• ${skill}</li>`).join('') || '<li>None</li>'}
+                            </ul>
+                        </div>
+                        <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                            <h4 class="font-semibold text-indigo-800 mb-3">Profile 2 Unique</h4>
+                            <ul class="space-y-1">
+                                ${report.skills?.profile2Unique?.map(skill => `<li class="text-sm text-gray-700">• ${skill}</li>`).join('') || '<li>None</li>'}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Career Trajectory -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-teal-600 mb-4">📈 Career Trajectory</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
+                            <h4 class="font-semibold text-teal-800 mb-2">Profile 1</h4>
+                            <p class="text-gray-700">${report.careerTrajectory?.profile1 || 'N/A'}</p>
+                        </div>
+                        <div class="bg-cyan-50 p-4 rounded-lg border border-cyan-200">
+                            <h4 class="font-semibold text-cyan-800 mb-2">Profile 2</h4>
+                            <p class="text-gray-700">${report.careerTrajectory?.profile2 || 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strengths -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-amber-600 mb-4">💪 Strengths</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                            <h4 class="font-semibold text-amber-800 mb-3">Profile 1</h4>
+                            <ul class="space-y-1">
+                                ${report.strengths?.profile1?.map(strength => `<li class="text-gray-700">⭐ ${strength}</li>`).join('') || '<li>None</li>'}
+                            </ul>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                            <h4 class="font-semibold text-yellow-800 mb-3">Profile 2</h4>
+                            <ul class="space-y-1">
+                                ${report.strengths?.profile2?.map(strength => `<li class="text-gray-700">⭐ ${strength}</li>`).join('') || '<li>None</li>'}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">📝 Summary</h3>
+                    <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                        <p class="text-gray-700 leading-relaxed">${report.summary || 'N/A'}</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('reportContent').innerHTML = content;
+            document.getElementById('reportSection').classList.remove('hidden');
+            document.getElementById('reportSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorSection').classList.remove('hidden');
+            document.getElementById('errorSection').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
