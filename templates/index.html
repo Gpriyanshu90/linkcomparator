@@ -141,19 +141,20 @@
             document.getElementById('compareBtn').disabled = true;
 
             try {
-                const response = await fetch('http://127.0.0.1:5000/compare', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        api_key: savedApiKey,
-                        profile1_url: profile1Url,
-                        profile1_text: profile1Text,
-                        profile2_url: profile2Url,
-                        profile2_text: profile2Text
-                    })
-                });
+                const response = await fetch("http://localhost:5000/compare", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        api_key: savedApiKey,
+        profile1_url: profile1Url,
+        profile1_text: profile1Text,
+        profile2_url: profile2Url,
+        profile2_text: profile2Text
+    })
+});
+
 
                 const data = await response.json();
 
