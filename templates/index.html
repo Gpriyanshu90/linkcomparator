@@ -24,7 +24,7 @@
             <p class="text-gray-600 text-lg">Compare LinkedIn profiles using Python + Google Gemini AI</p>
         </div>
 
-        <!-- API Key Section -->
+        <!-- API Key Section
         <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">🔑 Google Gemini API Configuration</h2>
             <div class="flex gap-4">
@@ -44,7 +44,7 @@
                     Get free API: <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline font-medium">Google AI Studio</a>
                 </p>
             </div>
-        </div>
+        </div> -->
 
         <!-- Profile Inputs -->
         <div class="grid md:grid-cols-2 gap-6 mb-8">
@@ -106,17 +106,17 @@
     </div>
 
     <script>
-        let savedApiKey = '';
+        // let savedApiKey = '';
 
-        function saveApiKey() {
-            const key = document.getElementById('apiKey').value.trim();
-            if (!key) {
-                alert('Please enter an API key');
-                return;
-            }
-            savedApiKey = key;
-            alert('✓ API key saved successfully!');
-        }
+        // function saveApiKey() {
+        //     const key = document.getElementById('apiKey').value.trim();
+        //     if (!key) {
+        //         alert('Please enter an API key');
+        //         return;
+        //     }
+        //     savedApiKey = key;
+        //     alert('✓ API key saved successfully!');
+        // }
 
         async function compareProfiles() {
             document.getElementById('reportSection').classList.add('hidden');
@@ -127,10 +127,10 @@
             const profile2Url = document.getElementById('profile2Url').value.trim();
             const profile2Text = document.getElementById('profile2Text').value.trim();
 
-            if (!savedApiKey) {
-                showError('Please enter and save your Gemini API key first');
-                return;
-            }
+            // if (!savedApiKey) {
+            //     showError('Please enter and save your Gemini API key first');
+            //     return;
+            // }
 
             if ((!profile1Url && !profile1Text) || (!profile2Url && !profile2Text)) {
                 showError('Please provide information for both profiles');
@@ -147,7 +147,7 @@
         "Content-Type": "application/json"
     },
     body: JSON.stringify({
-        api_key: savedApiKey,
+        // api_key: savedApiKey,
         profile1_url: profile1Url,
         profile1_text: profile1Text,
         profile2_url: profile2Url,

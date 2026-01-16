@@ -3,6 +3,12 @@ from flask_cors import CORS
 import requests
 import json
 import re
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv
+
 
 app = Flask(__name__)
 CORS(app, resources={r"/compare": {"origins": "*"}})
@@ -15,11 +21,14 @@ def index():
 def compare_profiles():
     try:
         data = request.json
-        api_key = data.get('api_key')
+        # api_key = data.get('api_key')
+        api_key = os.getenv("Gemini_api_key")
         profile1_url = data.get('profile1_url', '')
         profile1_text = data.get('profile1_text', '')
         profile2_url = data.get('profile2_url', '')
         profile2_text = data.get('profile2_text', '')
+        
+        print(api_key)
 
         # Validation
         if not api_key:
